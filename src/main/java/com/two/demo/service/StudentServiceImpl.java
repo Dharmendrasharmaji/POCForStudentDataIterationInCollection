@@ -3,6 +3,7 @@ package com.two.demo.service;
 import com.two.demo.dao.StudentDao;
 import com.two.demo.dto.StudentDto;
 import com.two.demo.exceptions.IdAlreadyExistsException;
+import com.two.demo.exceptions.NoBranchPresentWithProvidedNameException;
 import com.two.demo.exceptions.NoDataFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -55,9 +56,13 @@ public class StudentServiceImpl implements StudentService {
     public List<StudentDto> getStudentsByBranch(String branch) {
 
 //        if branch is null then return all data if not then search
-        if (branch == null) {
+        if (branch == null || branch.isBlank()) {
             return studentDao.listStudent;
 
+        }
+//        if no matching branch found throw exception
+        else if (!studentDao.listStudent.stream().anyMatch(l -> l.getBranch().equals(branch))) {
+            throw new NoBranchPresentWithProvidedNameException("Branch is not present.");
         } else {
 
 //            trim branch name
@@ -68,10 +73,6 @@ public class StudentServiceImpl implements StudentService {
 
 //            filter data according to the matched branch name
             List<StudentDto> fileteredStudents = listStudent.stream().filter(s -> s.getBranch().equals(trimmedBranch)).collect(Collectors.toList());
-
-//            if no data found then throw no data found exception else return data as a list
-            if (fileteredStudents.isEmpty())
-                throw new NoDataFoundException("No match found with " + trimmedBranch);
 
             return fileteredStudents;
         }
@@ -101,6 +102,11 @@ public class StudentServiceImpl implements StudentService {
                         .limit(3)
         ).collect(Collectors.toList());
 
+//        if no data is present then throw exception
+        if (collect.isEmpty()) {
+            throw new NoDataFoundException("No data Found.");
+        }
+
 //        returning top 3 students each branch as a list
         return collect;
     }
@@ -124,6 +130,10 @@ public class StudentServiceImpl implements StudentService {
                 sortedStudentData.stream().filter(s -> s.getBranch().equals(d)).filter(s -> s.getSex().equals(g)).limit(1)
         )).collect(Collectors.toList());
 
+//        if no data is found then throw exception
+        if (sexWiseListOfToppers.isEmpty()){
+            throw new NoDataFoundException("No Data Found.");
+        }
 //        returning sex wise toppers list of students
         return sexWiseListOfToppers;
     }

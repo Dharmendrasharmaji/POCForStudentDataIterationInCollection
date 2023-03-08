@@ -28,8 +28,13 @@ public class APIExceptionHandler {
     }
 
     @ExceptionHandler(IdAlreadyExistsException.class)
-    public ResponseEntity<?> idAlreadyPresent(IdAlreadyExistsException exception){
+    public ResponseEntity<?> idAlreadyPresentHandler(IdAlreadyExistsException exception){
         return new ResponseEntity<>(exception.getMessage(),HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(NoBranchPresentWithProvidedNameException.class)
+    public ResponseEntity<?> branchNotPresentHandler(NoBranchPresentWithProvidedNameException exception){
+        return new ResponseEntity<>(exception.getMessage(),HttpStatus.BAD_REQUEST);
     }
 
 }
